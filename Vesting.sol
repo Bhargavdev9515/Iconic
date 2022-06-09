@@ -968,14 +968,13 @@ uint[] public saleTypeTimeframe = [0,660,540,365,180,900,1095,1050,730,1350,480]
             token.transfer(msg.sender, amount);
             emit TokenWithdraw(msg.sender, amount);}
             else{
-                require(block.timestamp>intermediateRelease,"wait for intermediate release");
-                require(block.timestamp>timestampp[msg.sender]+day,"wait for 1 day");
-                 uint256 amount = (Investors[msg.sender].initialAmount)*(6)/100;
-                 uint256 amountday=(amount)/30;
+                 require(block.timestamp>intermediateRelease,"wait for intermediate release");
+                 require(block.timestamp>timestampp[msg.sender]+day,"wait for 1 day");
                  timestampp[msg.sender]=block.timestamp;
-                 
-                 if(block.timestamp>block.timestamp+30 * day){
-                     Investors[msg.sender].isInitialAmountClaimed = true;  
+                  uint pending = (intermediateRelease-timestampp[msg.sender])/60;
+                  uint256 amountday=pending * ((Investors[msg.sender].initialAmount)/30);
+                 if(block.timestamp>intermediateRelease+30 * day){
+                   Investors[msg.sender].isInitialAmountClaimed = true;  
                  }
                  token.transfer(msg.sender,amountday);
 
