@@ -345,7 +345,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
         }
     }
 
-    function getAvailableBalance(address _addr) external view returns(uint256, uint256, uint256,uint ){
+    function getAvailableBalance(address _addr) external view returns(uint256, uint256, uint256){
         uint VestEnd=vestEnd[Investors[_addr].investorType];
         uint lockDate=lockEnd[Investors[_addr].investorType];
         if(Investors[_addr].isInitialAmountClaimed || Investors[_addr].investorType == 1 || Investors[_addr].investorType == 5 || Investors[_addr].investorType == 6 || Investors[_addr].investorType == 7){
@@ -370,14 +370,14 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
             tokenToTransfer = numberOfUnitsCanBeVested * Investors[_addr].tokensPerUnit;
             uint remainingUnits = Investors[_addr].remainingUnitsToVest;
             uint balance = Investors[_addr].vestingBalance;
-            if(numberOfUnitsCanBeVested == remainingUnits) return(balance,0,0,numberOfUnitsCanBeVested) ;
-            else return(tokenToTransfer,remainingUnits,balance,numberOfUnitsCanBeVested);
+            if(numberOfUnitsCanBeVested == remainingUnits) return(balance,0,0) ;
+            else return(tokenToTransfer,remainingUnits,balance);
         }
         else {
             if(!isStart)return(0,0,0);
-            if(block.timestamp<seedStartDate)return(0,0,0,0);
+            if(block.timestamp<seedStartDate)return(0,0,0);
             Investors[_addr].initialAmount == 0 ;
-            return (Investors[_addr].initialAmount,0,0,0);
+            return (Investors[_addr].initialAmount,0,0);
         }
         
     }
