@@ -378,17 +378,16 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
             else return(tokenToTransfer,remainingUnits,balance);
         }
         else {
-            if (Investors[_addr].investorType == 8){
-                if(block.timestamp>intermediateRelease+day)return 0;
-                if(block.timestamp>timestampp[msg.sender]+day) return 0;//,"wait for 1 day"); // block.timestamp > 0+day;
+            if (Investors[_addr].investorType == 8) {
+                if(block.timestamp>intermediateRelease+day) return (0,0,0);
+                if(block.timestamp>timestampp[msg.sender]+day) return (0,0,0);//,"wait for 1 day"); // block.timestamp > 0+day;
                 uint pending;
                 if (timestampp[msg.sender]>0)
                     pending = (intermediateRelease-timestampp[msg.sender])/60; //(1654837500 - 0)/60
                 else
                     pending = ((block.timestamp - intermediateRelease)/60);
                 uint256 amountDay = pending * ((Investors[msg.sender].initialAmount)/30); // 3 * 60/30 = 6
-                timestampp[msg.sender]=block.timestamp;
-               return amountDay;
+               return (amountDay,0,0);
             }
             if(!isStart)return(0,0,0);
             if(block.timestamp<seedStartDate)return(0,0,0);
