@@ -239,8 +239,8 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
             uint256 balance = Investors[msg.sender].vestingBalance; //balance === tokensToTransfer
             
 //            (uint tokensToTransfer, uint remainingAmount, uint Balance, uint vestingLeft) = getAvailableBalance(msg.sender);
-            Investors[msg.sender].remainingUnitsToVest -= vestingLeft;
-            Investors[msg.sender].vestingBalance -= vestingLeft * Investors[msg.sender].tokensPerUnit;
+            Investors[msg.sender].remainingUnitsToVest -= numberOfUnitsCanBeVested;
+            Investors[msg.sender].vestingBalance -= numberOfUnitsCanBeVested * Investors[msg.sender].tokensPerUnit;
             Investors[msg.sender].lastVestedTime = block.timestamp;
             if(numberOfUnitsCanBeVested == remainingUnits) {
                 token.transfer(msg.sender, balance);
