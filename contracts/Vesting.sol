@@ -269,18 +269,18 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
                 pending = (intermediateRelease-timestampp[msg.sender])/60; //(1654837500 - 0)/60
                 else
                 pending = ((block.timestamp - intermediateRelease)/60);
-                uint256 amountday = pending * ((Investors[msg.sender].initialAmount)/30); // 3 * 60/30 = 6
+                uint256 amountDay = pending * ((Investors[msg.sender].initialAmount)/30); // 3 * 60/30 = 6
                 timestampp[msg.sender]=block.timestamp;
                 if(block.timestamp>intermediateRelease+30 * day){
                     Investors[msg.sender].isInitialAmountClaimed = true;
                 }
-                token.transfer(msg.sender,amountday);
+                token.transfer(msg.sender,amountDay);
             }
         }
     }
 
-    function setSigner(address _addr) external onlyOwner{
-        signer=_addr;
+    function setSigner(address _address) external onlyOwner{
+        signer=_address;
     }
     function setDates(uint256 StartDate,bool _isStart) public onlyOwner{
 
@@ -353,9 +353,9 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
         uint VestEnd=vestEnd[Investors[_addr].investorType];
         uint lockDate=lockEnd[Investors[_addr].investorType];
         if(Investors[_addr].isInitialAmountClaimed || Investors[_addr].investorType == 1 || Investors[_addr].investorType == 5 || Investors[_addr].investorType == 6 || Investors[_addr].investorType == 7){
-            uint hello= day;
+            uint hello = day;
             uint timeDifference;
-            // uint lockDateteam = teamLockEndDate;
+            // uint lockDateTeam = teamLockEndDate;
             if(Investors[_addr].lastVestedTime == 0) {
 
                 if(block.timestamp>=VestEnd)return(Investors[_addr].remainingUnitsToVest*Investors[_addr].tokensPerUnit,0,0);
@@ -378,6 +378,18 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
             else return(tokenToTransfer,remainingUnits,balance);
         }
         else {
+            if (Investors[_addr].investorType == 8){
+                if(block.timestamp>intermediateRelease+day)return 0;
+                if(block.timestamp>timestampp[msg.sender]+day) return 0;//,"wait for 1 day"); // block.timestamp > 0+day;
+                uint pending;
+                if (timestampp[msg.sender]>0)
+                    pending = (intermediateRelease-timestampp[msg.sender])/60; //(1654837500 - 0)/60
+                else
+                    pending = ((block.timestamp - intermediateRelease)/60);
+                uint256 amountDay = pending * ((Investors[msg.sender].initialAmount)/30); // 3 * 60/30 = 6
+                timestampp[msg.sender]=block.timestamp;
+               return amountDay;
+            }
             if(!isStart)return(0,0,0);
             if(block.timestamp<seedStartDate)return(0,0,0);
             Investors[_addr].initialAmount == 0 ;
