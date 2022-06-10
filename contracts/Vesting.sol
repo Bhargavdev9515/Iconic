@@ -262,12 +262,14 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
                 token.transfer(msg.sender, amount);
                 emit TokenWithdraw(msg.sender, amount);}
             else{
-                require(block.timestamp>intermediateRelease,"wait for intermediate release");
+                require(block.timestamp>intermediateRelease+day,"wait for intermediate release");
                 require(block.timestamp>timestampp[msg.sender]+day,"wait for 1 day"); // block.timestamp > 0+day;
-                uint pending = 1;
-                if (timestampp[msg.sender]!=0)
+                uint pending;
+                if (timestampp[msg.sender]>0)
                 pending = (intermediateRelease-timestampp[msg.sender])/60; //(1654837500 - 0)/60
-                uint256 amountday = pending * ((Investors[msg.sender].initialAmount)/30); // 1 * 60/30 = 2
+                else
+                pending = ((block.timestamp - intermediateRelease)/60);
+                uint256 amountday = pending * ((Investors[msg.sender].initialAmount)/30); // 3 * 60/30 = 6
                 timestampp[msg.sender]=block.timestamp;
                 if(block.timestamp>intermediateRelease+30 * day){
                     Investors[msg.sender].isInitialAmountClaimed = true;
