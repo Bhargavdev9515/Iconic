@@ -266,15 +266,20 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
                 require(block.timestamp>intermediateRelease+day,"wait for intermediate release");
                 require(block.timestamp>timestampp[msg.sender]+day,"wait for 1 day"); // block.timestamp > 0+day;
                 uint pending;
-                if (timestampp[msg.sender]>0)
-                pending = (intermediateRelease-timestampp[msg.sender])/60; //(1654837500 - 0)/60
-                else
-                pending = ((block.timestamp - intermediateRelease)/60);
+                if (timestampp[msg.sender]!=0) {
+                    pending = (timestampp[msg.sender]-intermediateRelease)/60;
+                }
+                else {
+                    pending = (block.timestamp-intermediateRelease)/60;
+                }
                 uint256 amountDay = pending * ((Investors[msg.sender].initialAmount)/30); // 3 * 60/30 = 6
                 timestampp[msg.sender]=block.timestamp;
                 if(block.timestamp>intermediateRelease+30 * day){
                     Investors[msg.sender].isInitialAmountClaimed = true;
                 }
+
+                Investors[msg.sender].vestingBalance -= amountDay;
+
                 token.transfer(msg.sender,amountDay);
                 emit IntermediateInvestor(msg.sender,amountDay);
             }
