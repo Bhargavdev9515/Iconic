@@ -359,7 +359,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
         uint VestEnd=vestEnd[Investors[_addr].investorType];
         uint lockDate=lockEnd[Investors[_addr].investorType];
 
-        if (Investors[_addr].investorType == 8) {
+        if (Investors[_addr].investorType == 8 && !Investors[msg.sender].isInitialAmountClaimed) {
             if(block.timestamp<intermediateRelease+day)return (0,0,0);//,"wait for intermediate release");
             if(block.timestamp<timestampp[msg.sender]+day)return (0,0,0);//,"wait for 1 day"); // block.timestamp > 0+day;
 
@@ -370,7 +370,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
             pending = ((block.timestamp-intermediateRelease))/60;
             }
             uint256 amountday = pending * ((Investors[msg.sender].initialAmount)/30); // 1 * 60/30 = 2
-            return (0,0,0);
+            return (amountday,0,0);
         }
 
         if(Investors[_addr].isInitialAmountClaimed || Investors[_addr].investorType == 1 || Investors[_addr].investorType == 5 || Investors[_addr].investorType == 6 || Investors[_addr].investorType == 7){
