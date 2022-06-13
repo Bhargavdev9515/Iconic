@@ -31,7 +31,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
 
     event TokenWithdraw(address indexed buyer, uint value);
     event InvestersAddress(address account, uint _amout,uint saletype);
-    event IntermediateInvestor(address account, uint _amout);
+//    event IntermediateInvestor(address account, uint _amout);
 
     mapping(address => InvestorDetails) public Investors;
 
@@ -272,7 +272,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
                 Investors[msg.sender].vestingBalance -= amountDay;
 
                 token.transfer(msg.sender,amountDay);
-                emit IntermediateInvestor(msg.sender,amountDay);
+                emit TokenWithdraw(msg.sender,amountDay);
             }
         }
     }
@@ -378,12 +378,14 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
         else {
             if (Investors[_addr].investorType == 8) {
                 if(block.timestamp<intermediateRelease+day) return (0,0,0);
-                if(block.timestamp>timestampp[msg.sender]+day) return (0,0,0);//,"wait for 1 day"); // block.timestamp > 0+day;
+                if(block.timestamp<timestampp[msg.sender]+day) return (0,0,0);//,"wait for 1 day"); // block.timestamp > 0+day;
                 uint pending;
-                if (timestampp[msg.sender]>0)
-                    pending = (intermediateRelease-timestampp[msg.sender])/60; //(1654837500 - 0)/60
-                else
-                    pending = ((block.timestamp - intermediateRelease)/60);
+                if (timestampp[msg.sender]!=0) {
+                    pending = (timestampp[msg.sender]-intermediateRelease)/60;
+                }
+                else {
+                    pending = (block.timestamp-intermediateRelease)/60;
+                }
                 uint256 amountDay = pending * ((Investors[msg.sender].initialAmount)/30); // 3 * 60/30 = 6
 
                return (amountDay,0,0);
