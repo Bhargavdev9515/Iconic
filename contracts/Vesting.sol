@@ -30,8 +30,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
     }
 
     event TokenWithdraw(address indexed buyer, uint value);
-    event InvestersAddress(address account, uint _amout,uint saletype);
-//    event IntermediateInvestor(address account, uint _amout);
+    event InvestersAddress(address accoutt, uint _amout,uint saletype);
 
     mapping(address => InvestorDetails) public Investors;
 
@@ -90,8 +89,8 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
     }
 
 
-    /* 
-        Transfer the remining token to different wallet. 
+    /*
+        Transfer the remining token to different wallet.
         Once the ICO is completed and if there is any remining tokens it can be transfered other wallets.
     */
     function transferToken(address ERC20Address, uint256 value) public onlyOwner {
@@ -126,8 +125,17 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
     uint[] public saleTypeUnitsToVest = [0,660,540,365,180,900,1095,1050,730,1350,480];
     uint[] public saleTypeMultiplier = [0,0,5,10,20,0,0,0,6,3,20];
     uint[] public saleTypeTimeframe = [0,660,540,365,180,900,1095,1050,730,1350,480];
-    uint public MiddleRelease;
 
+    // seedVestingEndDate = seedLockEndDate + 660 minutes;
+    // strategicVestingEndDate = strategicLockEndDate  + 540 minutes;
+    // privateVestingEndDate = privateLockEndDate + 365 minutes;
+    // publicVestingEndDate = publicLockEndDate + 180 minutes;
+    // advisorsVestingEndDate = advisorsLockEndDate + 900 minutes;
+    // teamVestingEndDate = teamLockEndDate + 1095 minutes;
+    // ecosystemVestingEndDate = ecosystemLockEndDate + 1050 minutes;
+    // developmentVestingEndDate = developmentLockEndDate + 730 minutes;
+    // marketingVestingEndDate = marketingLockEndDate + 1350 minutes;
+    // liquidityVestingEndDate = liquidityLockEndDate + 480 minutes;
 
     function adminAddInvestors(Investor[] memory investorArray) public onlyOwner{
         for(uint16 i = 0; i < investorArray.length; i++) {
@@ -154,9 +162,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
             emit InvestersAddress(investorArray[i].account,investorArray[i].amount, investorArray[i].saleType);
         }
     }
-
-
-
+    uint public MiddleRelease;
     function addInvestors(Ikonic memory ikonic) external{
         require(getSigner(ikonic)==signer,"!signer");
         require(ikonic.userAddress==msg.sender,"!User");
@@ -185,6 +191,8 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
         Investors[ikonic.userAddress] = investor;
         emit InvestersAddress(ikonic.userAddress,ikonic.amount,ikonic.saleType);
     }
+
+
 
     function withdrawTokens() public   nonReentrant setStart {
         require(block.timestamp >=seedStartDate,"wait for start date");
@@ -229,8 +237,8 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
             uint256 tokenToTransfer = numberOfUnitsCanBeVested * Investors[msg.sender].tokensPerUnit;
             uint256 remainingUnits = Investors[msg.sender].remainingUnitsToVest; //remainingUnits === remainingAmount
             uint256 balance = Investors[msg.sender].vestingBalance; //balance === tokensToTransfer
-            
-//            (uint tokensToTransfer, uint remainingAmount, uint Balance, uint vestingLeft) = getAvailableBalance(msg.sender);
+
+            //            (uint tokensToTransfer, uint remainingAmount, uint Balance, uint vestingLeft) = getAvailableBalance(msg.sender);
             Investors[msg.sender].remainingUnitsToVest -= numberOfUnitsCanBeVested;
             Investors[msg.sender].vestingBalance -= numberOfUnitsCanBeVested * Investors[msg.sender].tokensPerUnit;
             Investors[msg.sender].lastVestedTime = block.timestamp;
@@ -256,29 +264,29 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
             else{
                 require(block.timestamp>intermediateRelease+day,"wait for intermediate release");
                 require(block.timestamp>timestampp[msg.sender]+day,"wait for 1 day"); // block.timestamp > 0+day;
+
                 uint pending;
-                if (timestampp[msg.sender]!=0) {
-                    pending = (timestampp[msg.sender]-intermediateRelease)/60;
+                if (timestampp[msg.sender]!=0){
+                    pending = (timestampp[msg.sender]-intermediateRelease)/60;}
+                else{
+                    pending = ((block.timestamp-intermediateRelease))/60;
+
                 }
-                else {
-                    pending = (block.timestamp-intermediateRelease)/60;
-                }
-                uint256 amountDay = pending * ((Investors[msg.sender].initialAmount)/30); // 3 * 60/30 = 6
+
+                uint256 amountday = pending * ((Investors[msg.sender].initialAmount)/30); // 1 * 60/30 = 2
                 timestampp[msg.sender]=block.timestamp;
                 if(block.timestamp>intermediateRelease+30 * day){
                     Investors[msg.sender].isInitialAmountClaimed = true;
                 }
-
-                Investors[msg.sender].vestingBalance -= amountDay;
-
-                token.transfer(msg.sender,amountDay);
-                emit TokenWithdraw(msg.sender,amountDay);
+                Investors[msg.sender].vestingBalance -= amountday;
+                token.transfer(msg.sender,amountday);
+                emit TokenWithdraw(msg.sender, amountday);
             }
         }
     }
 
-    function setSigner(address _address) external onlyOwner{
-        signer=_address;
+    function setSigner(address _addr) external onlyOwner{
+        signer=_addr;
     }
     function setDates(uint256 StartDate,bool _isStart) public onlyOwner{
 
@@ -295,7 +303,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
         marketingStartDate = StartDate;
         liquidityStartDate = StartDate;
 
-        intermediateRelease = developmentStartDate + 2 minutes;
+        intermediateRelease = developmentStartDate;
 
 
         seedLockEndDate = seedStartDate + 2 minutes;
@@ -305,7 +313,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
         advisorsLockEndDate = advisorsStartDate + 4 minutes;
         teamLockEndDate = teamStartDate + 6 minutes;
         ecosystemLockEndDate = ecosystemStartDate + 1 minutes;
-        developmentLockEndDate = developmentStartDate + 2 minutes;
+        developmentLockEndDate = intermediateRelease + 10 minutes;
         marketingLockEndDate = marketingStartDate + 3 minutes;
         liquidityLockEndDate = liquidityStartDate + 1 minutes;
 
@@ -347,13 +355,28 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
         }
     }
 
-    function getAvailableBalance(address _addr) external view returns(uint256, uint256, uint256){
+    function getAvailableBalance(address _addr) external view returns(uint256, uint256, uint256) {
         uint VestEnd=vestEnd[Investors[_addr].investorType];
         uint lockDate=lockEnd[Investors[_addr].investorType];
+
+        if (Investors[_addr].investorType == 8) {
+            if(block.timestamp<intermediateRelease+day)return (0,0,0);//,"wait for intermediate release");
+            if(block.timestamp<timestampp[msg.sender]+day)return (0,0,0);//,"wait for 1 day"); // block.timestamp > 0+day;
+
+            uint pending;
+            if (timestampp[msg.sender]!=0){
+            pending = (timestampp[msg.sender]-intermediateRelease)/60;}
+            else{
+            pending = ((block.timestamp-intermediateRelease))/60;
+            }
+            uint256 amountday = pending * ((Investors[msg.sender].initialAmount)/30); // 1 * 60/30 = 2
+            return (0,0,0);
+        }
+
         if(Investors[_addr].isInitialAmountClaimed || Investors[_addr].investorType == 1 || Investors[_addr].investorType == 5 || Investors[_addr].investorType == 6 || Investors[_addr].investorType == 7){
-            uint hello = day;
+            uint hello= day;
             uint timeDifference;
-            // uint lockDateTeam = teamLockEndDate;
+            // uint lockDateteam = teamLockEndDate;
             if(Investors[_addr].lastVestedTime == 0) {
 
                 if(block.timestamp>=VestEnd)return(Investors[_addr].remainingUnitsToVest*Investors[_addr].tokensPerUnit,0,0);
@@ -375,27 +398,14 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
             if(numberOfUnitsCanBeVested == remainingUnits) return(balance,0,0) ;
             else return(tokenToTransfer,remainingUnits,balance);
         }
-        else {
-            if (Investors[_addr].investorType == 8) {
-                if(block.timestamp<intermediateRelease+day) return (0,0,0);
-                if(block.timestamp<timestampp[msg.sender]+day) return (0,0,0);//,"wait for 1 day"); // block.timestamp > 0+day;
-                uint pending;
-                if (timestampp[msg.sender]!=0) {
-                    pending = (timestampp[msg.sender]-intermediateRelease)/60;
-                }
-                else {
-                    pending = (block.timestamp-intermediateRelease)/60;
-                }
-                uint256 amountDay = pending * ((Investors[msg.sender].initialAmount)/30); // 3 * 60/30 = 6
-
-               return (amountDay,0,0);
-            }
+        else
+        {
             if(!isStart)return(0,0,0);
             if(block.timestamp<seedStartDate)return(0,0,0);
             Investors[_addr].initialAmount == 0 ;
             return (Investors[_addr].initialAmount,0,0);
         }
-        
+
     }
 
 }
