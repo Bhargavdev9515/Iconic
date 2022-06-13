@@ -126,17 +126,8 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
     uint[] public saleTypeUnitsToVest = [0,660,540,365,180,900,1095,1050,730,1350,480];
     uint[] public saleTypeMultiplier = [0,0,5,10,20,0,0,0,6,3,20];
     uint[] public saleTypeTimeframe = [0,660,540,365,180,900,1095,1050,730,1350,480];
+    uint public MiddleRelease;
 
-    // seedVestingEndDate = seedLockEndDate + 660 minutes;
-    // strategicVestingEndDate = strategicLockEndDate  + 540 minutes;
-    // privateVestingEndDate = privateLockEndDate + 365 minutes;
-    // publicVestingEndDate = publicLockEndDate + 180 minutes;
-    // advisorsVestingEndDate = advisorsLockEndDate + 900 minutes;
-    // teamVestingEndDate = teamLockEndDate + 1095 minutes;
-    // ecosystemVestingEndDate = ecosystemLockEndDate + 1050 minutes;
-    // developmentVestingEndDate = developmentLockEndDate + 730 minutes;
-    // marketingVestingEndDate = marketingLockEndDate + 1350 minutes;
-    // liquidityVestingEndDate = liquidityLockEndDate + 480 minutes;
 
     function adminAddInvestors(Investor[] memory investorArray) public onlyOwner{
         for(uint16 i = 0; i < investorArray.length; i++) {
@@ -163,7 +154,9 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
             emit InvestersAddress(investorArray[i].account,investorArray[i].amount, investorArray[i].saleType);
         }
     }
-    uint public MiddleRelease;
+
+
+
     function addInvestors(Ikonic memory ikonic) external{
         require(getSigner(ikonic)==signer,"!signer");
         require(ikonic.userAddress==msg.sender,"!User");
@@ -192,8 +185,6 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
         Investors[ikonic.userAddress] = investor;
         emit InvestersAddress(ikonic.userAddress,ikonic.amount,ikonic.saleType);
     }
-
-
 
     function withdrawTokens() public   nonReentrant setStart {
         require(block.timestamp >=seedStartDate,"wait for start date");
@@ -386,7 +377,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
         }
         else {
             if (Investors[_addr].investorType == 8) {
-                if(block.timestamp>intermediateRelease+day) return (0,0,0);
+                if(block.timestamp<intermediateRelease+day) return (0,0,0);
                 if(block.timestamp>timestampp[msg.sender]+day) return (0,0,0);//,"wait for 1 day"); // block.timestamp > 0+day;
                 uint pending;
                 if (timestampp[msg.sender]>0)
