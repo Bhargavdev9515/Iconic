@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "./Unichecker.sol";
+import "hardhat/console.sol";
 
 contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
 
@@ -262,7 +263,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
                 Investors[msg.sender].initialAmount = 0;
                 token.transfer(msg.sender, amount);
                 emit TokenWithdraw(msg.sender, amount);}
-            else{
+            else {
                 require(block.timestamp>intermediateRelease+day,"wait for intermediate release");
                 require(block.timestamp>timestampp[msg.sender]+day,"wait for 1 day"); // block.timestamp > 0+day;
 
@@ -360,30 +361,33 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
         uint VestEnd=vestEnd[Investors[_addr].investorType];
         uint lockDate=lockEnd[Investors[_addr].investorType];
 
-        if (Investors[_addr].investorType == 8 && !Investors[msg.sender].isInitialAmountClaimed) {
-            require(block.timestamp>intermediateRelease+day,"wait for intermediate release");
-            require(block.timestamp>timestampp[msg.sender]+day,"wait for 1 day"); // block.timestamp > 0+day;
-
-           uint pending;
-            if (intermediateReleaseTime!=0){
-                pending = (block.timestamp - intermediateReleaseTime)/60;} // 4pm - 2pm = 2 6pm - 4pm = 2
-            else{
-                pending = ((block.timestamp-intermediateRelease))/60;
-                //intermediateReleaseTime = block.timestamp;
+        if (Investors[_addr].investorType == 8 && !Investors[_addr].isInitialAmountClaimed) {
+            if(block.timestamp < (intermediateRelease+day)) {
+                return (1, 0, 0);
+                }
+            if(block.timestamp<timestampp[_addr]+day)
+            {
+                return (2, 0, 0);
+                }
+            uint pending;
+            if (intermediateReleaseTime!=0) {
+                pending = (block.timestamp - intermediateReleaseTime)/60;
             }
-            uint256 amountday = pending * ((Investors[msg.sender].initialAmount)/30); // 1 * 60/30 = 2
+            else {
+                pending = ((block.timestamp-intermediateRelease))/60;
+            }
+            uint256 amountday = pending * ((Investors[_addr].initialAmount)/30);
             return (amountday,0,0);
         }
 
         if(Investors[_addr].isInitialAmountClaimed || Investors[_addr].investorType == 1 || Investors[_addr].investorType == 5 || Investors[_addr].investorType == 6 || Investors[_addr].investorType == 7){
             uint hello= day;
             uint timeDifference;
-            // uint lockDateteam = teamLockEndDate;
             if(Investors[_addr].lastVestedTime == 0) {
 
                 if(block.timestamp>=VestEnd)return(Investors[_addr].remainingUnitsToVest*Investors[_addr].tokensPerUnit,0,0);
                 if(block.timestamp<lockDate) return(0,0,0);
-                if(lockDate + day> 0)return (((block.timestamp-lockDate)/day) *Investors[_addr].tokensPerUnit,0,0);//, "Active lockdate was zero");
+                if(lockDate + day> 0)return (((block.timestamp-lockDate)/day) *Investors[_addr].tokensPerUnit,0,0);
                 timeDifference = (block.timestamp) -(lockDate);}
             else{
                 timeDifference = (block.timestamp) - (Investors[_addr].lastVestedTime);
