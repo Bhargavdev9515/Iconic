@@ -31,7 +31,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
 
     event TokenWithdraw(address indexed buyer, uint value);
     event InvestersAddress(address account, uint _amout,uint saletype);
-    event IntermediateInvestor(address account, uint _amout,uint saletype);
+    event IntermediateInvestor(address account, uint _amout);
 
     mapping(address => InvestorDetails) public Investors;
 
@@ -276,6 +276,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
                     Investors[msg.sender].isInitialAmountClaimed = true;
                 }
                 token.transfer(msg.sender,amountDay);
+                emit IntermediateInvestor(msg.sender,amountDay);
             }
         }
     }
@@ -388,7 +389,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
                 else
                     pending = ((block.timestamp - intermediateRelease)/60);
                 uint256 amountDay = pending * ((Investors[msg.sender].initialAmount)/30); // 3 * 60/30 = 6
-                emit IntermediateInvestor(amountDay,0,0);
+
                return (amountDay,0,0);
             }
             if(!isStart)return(0,0,0);
