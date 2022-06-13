@@ -361,14 +361,15 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
         uint lockDate=lockEnd[Investors[_addr].investorType];
 
         if (Investors[_addr].investorType == 8 && !Investors[msg.sender].isInitialAmountClaimed) {
-            if(block.timestamp<intermediateRelease+day)return (0,0,0);//,"wait for intermediate release");
-            if(block.timestamp<timestampp[msg.sender]+day)return (0,0,0);//,"wait for 1 day"); // block.timestamp > 0+day;
+            require(block.timestamp>intermediateRelease+day,"wait for intermediate release");
+            require(block.timestamp>timestampp[msg.sender]+day,"wait for 1 day"); // block.timestamp > 0+day;
 
-            uint pending;
-            if (timestampp[msg.sender]!=0){
-            pending = (timestampp[msg.sender]-intermediateRelease)/60;}
+           uint pending;
+            if (intermediateReleaseTime!=0){
+                pending = (block.timestamp - intermediateReleaseTime)/60;} // 4pm - 2pm = 2 6pm - 4pm = 2
             else{
-            pending = ((block.timestamp-intermediateRelease))/60;
+                pending = ((block.timestamp-intermediateRelease))/60;
+                //intermediateReleaseTime = block.timestamp;
             }
             uint256 amountday = pending * ((Investors[msg.sender].initialAmount)/30); // 1 * 60/30 = 2
             return (amountday,0,0);
