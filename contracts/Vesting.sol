@@ -48,6 +48,7 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
     uint256 public liquidityStartDate;
 
     uint public intermediateRelease;
+    uint public intermediateReleaseTime;
 
     uint256 public seedLockEndDate;
     uint256 public strategicLockEndDate;
@@ -266,15 +267,15 @@ contract IkonicVesting is Ownable,ReentrancyGuard,uniChecker {
                 require(block.timestamp>timestampp[msg.sender]+day,"wait for 1 day"); // block.timestamp > 0+day;
 
                 uint pending;
-                if (timestampp[msg.sender]!=0){
-                    pending = (timestampp[msg.sender]-intermediateRelease)/60;}
+                if (intermediateReleaseTime!=0){
+                    pending = (block.timestamp - intermediateReleaseTime)/60;} // 4pm - 2pm = 2 6pm - 4pm = 2
                 else{
                     pending = ((block.timestamp-intermediateRelease))/60;
-
-                }
-
+                    intermediateReleaseTime = block.timestamp;
+                   }
                 uint256 amountday = pending * ((Investors[msg.sender].initialAmount)/30); // 1 * 60/30 = 2
-                timestampp[msg.sender]=block.timestamp;
+                intermediateReleaseTime = block.timestamp;
+//                timestampp[msg.sender]=block.timestamp;
                 if(block.timestamp>intermediateRelease+30 * day){
                     Investors[msg.sender].isInitialAmountClaimed = true;
                 }
